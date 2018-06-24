@@ -18,6 +18,6 @@ defmodule GHash.MixProject do
 
     # Run "mix help deps" to learn about dependencies.
     defp deps do
-        []
+        [{ :itsy, "~> 0.0" }]
     end
 end
