@@ -1,0 +1,2 @@
+defmodule GHash do
+end
