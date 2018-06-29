@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :ghash, key: :value
+#     config :spat, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:ghash, :key)
+#     Application.get_env(:spat, :key)
 #
 # You can also configure a 3rd-party app:
 #

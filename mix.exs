@@ -1,9 +1,9 @@
-defmodule GHash.MixProject do
+defmodule Spat.MixProject do
     use Mix.Project
 
     def project do
         [
-            app: :ghash,
+            app: :spat,
             version: "0.1.0",
             elixir: "~> 1.6",
             start_permanent: Mix.env() == :prod,
