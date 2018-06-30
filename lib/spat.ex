@@ -121,9 +121,9 @@ defmodule Spat do
         <<1 :: 6, 2 :: 6, 3 :: 6>>
     """
     @spec decode(String.t, pos_integer, pos_integer) :: packed_grid_index
-    def decode(hash, dimensions, levels) do
+    def decode(hash, dimensions, subdivisions) do
         { :ok, index } = decode_hash(hash, bits: true)
-        size = levels * dimensions
+        size = subdivisions * dimensions
         <<index :: bitstring-size(size), _ :: bitstring>> = index
         index
     end
