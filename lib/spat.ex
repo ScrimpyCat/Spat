@@ -1,5 +1,6 @@
-#rename as Spat
 defmodule Spat do
+    require Itsy.Binary
+
     @type grid_index :: [non_neg_integer]
     @type packed_grid_index :: bitstring
     @type subdivision(index) :: [index, ...]
@@ -42,11 +43,7 @@ defmodule Spat do
         <<4000 :: 12, 3 :: 12, 2 :: 12, 1 :: 12>>
     """
     @spec pack(grid_index, pos_integer) :: packed_grid_index
-    def pack(index, dimensions) do
-        Enum.reduce(index, <<>>, fn index, pack ->
-            <<index :: size(dimensions), pack :: bitstring>>
-        end)
-    end
+    def pack(index, dimensions), do: Itsy.Binary.pack(index, dimensions, reverse: true)
 
     @doc """
       Unpack a list (all subdivisions of a level) of grid indexes from a bitstring.
@@ -83,30 +80,19 @@ defmodule Spat do
         [1, 2, 3, 4000]
     """
     @spec unpack(packed_grid_index, pos_integer) :: grid_index
-    def unpack(index, dimensions), do: unpack(index, dimensions, [])
+    def unpack(index, dimensions), do: Itsy.Binary.unpack(index, dimensions, reverse: true)
 
-    defp unpack(<<>>, _, unpacked_index), do: unpacked_index
-    defp unpack(packed_index, dimensions, unpacked_index) do
-        <<index :: size(dimensions), packed_index :: bitstring>> = packed_index
-        unpack(packed_index, dimensions, [index|unpacked_index])
-    end
-
-    @encode_charset Enum.zip('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_', 0..63)
-    @encode_size Itsy.Bit.count(Itsy.Bit.mask_lower_power_of_2(length(@encode_charset)))
-
-    defp encode_hash(packed_index, encoding \\ <<>>)
-    for { chr, index } <- @encode_charset do
-        defp encode_hash(<<unquote(chr), packed_index :: binary>>, encoding), do: encode_hash(packed_index, <<encoding :: bitstring, unquote(index) :: size(@encode_size)>>)
-    end
-    defp encode_hash("", encoding), do: encoding
-
-    defp decode_hash(encoding, packed_index \\ "")
-    for { chr, index } <- @encode_charset do
-        defp decode_hash(<<unquote(index) :: size(@encode_size), encoding :: bitstring>>, packed_index), do: decode_hash(encoding, packed_index <> unquote(<<chr>>))
-    end
-    defp decode_hash(<<>>, packed_index), do: packed_index
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    |> String.graphemes
+    |> Enum.with_index
+    |> Itsy.Binary.encoder(private: true, encode: :encode_hash, decode: :decode_hash)
 
     def encode(index), do: encode_hash(index)
 
-    def decode(hash), do: decode_hash(hash)
+    def decode(hash, dimensions, levels) do
+        { :ok, index } = decode_hash(hash, bits: true)
+        size = levels * dimensions
+        <<index :: bitstring-size(size), _ :: bitstring>> = index
+        index
+    end
 end
