@@ -87,8 +87,40 @@ defmodule Spat do
     |> Enum.with_index
     |> Itsy.Binary.encoder(private: true, encode: :encode_hash, decode: :decode_hash)
 
+    @doc """
+      Encode a packed grid index.
+
+        iex> Spat.encode(<<0 :: 2>>)
+        "A"
+
+        iex> Spat.encode(<<0 :: 3>>)
+        "A"
+
+        iex> Spat.encode(<<0 :: 8>>)
+        "AA"
+
+        iex> Spat.encode(<<1 :: 6, 2 :: 6, 3 :: 6>>)
+        "BCD"
+    """
+    @spec encode(packed_grid_index) :: String.t
     def encode(index), do: encode_hash(index)
 
+    @doc """
+      Decode an encoded packed grid index.
+
+        iex> Spat.decode("A", 2, 1)
+        <<0 :: 2>>
+
+        iex> Spat.decode("A", 3, 1)
+        <<0 :: 3>>
+
+        iex> Spat.decode("AA", 2, 4)
+        <<0 :: 8>>
+
+        iex> Spat.decode("BCD", 6, 3)
+        <<1 :: 6, 2 :: 6, 3 :: 6>>
+    """
+    @spec decode(String.t, pos_integer, pos_integer) :: packed_grid_index
     def decode(hash, dimensions, levels) do
         { :ok, index } = decode_hash(hash, bits: true)
         size = levels * dimensions
