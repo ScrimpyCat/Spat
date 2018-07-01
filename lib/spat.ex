@@ -3,6 +3,7 @@ defmodule Spat do
 
     @type grid_index :: [non_neg_integer]
     @type packed_grid_index :: bitstring
+    @type encoded_index :: String.t
     @type subdivision(index) :: [index, ...]
 
     @doc """
@@ -102,7 +103,7 @@ defmodule Spat do
         iex> Spat.encode(<<1 :: 6, 2 :: 6, 3 :: 6>>)
         "BCD"
     """
-    @spec encode(packed_grid_index) :: String.t
+    @spec encode(packed_grid_index) :: encoded_index
     def encode(index), do: encode_hash(index)
 
     @doc """
@@ -120,7 +121,7 @@ defmodule Spat do
         iex> Spat.decode("BCD", 6, 3)
         <<1 :: 6, 2 :: 6, 3 :: 6>>
     """
-    @spec decode(String.t, pos_integer, pos_integer) :: packed_grid_index
+    @spec decode(encoded_index, pos_integer, pos_integer) :: packed_grid_index
     def decode(hash, dimensions, subdivisions) do
         { :ok, index } = decode_hash(hash, bits: true)
         size = subdivisions * dimensions
