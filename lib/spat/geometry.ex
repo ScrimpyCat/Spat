@@ -1,4 +1,4 @@
-defmodule Geometry do
+defmodule Spat.Geometry do
     @doc """
       Implement the behaviour for calculating the indexes of the requested
       geometry.
