@@ -11,4 +11,18 @@ defmodule Spat.Geometry.Point do
 
         subdivide(min, max, axis, region, { [start|sub_min], [(stop + start)|sub_max] })
     end
+
+    def intersect(_, _, _, 0), do: true
+    def intersect(point, min, max, dimension) do
+        axis = dimension - 1
+        p = Spat.Coord.get(point, axis)
+        start = Spat.Coord.get(min, axis)
+        stop = Spat.Coord.get(max, axis)
+
+        if (start <= p) && (stop >= p) do
+            intersect(point, min, max, axis)
+        else
+            false
+        end
+    end
 end
