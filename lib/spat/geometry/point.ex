@@ -1,6 +1,43 @@
 defmodule Spat.Geometry.Point do
     use Bitwise
 
+    @behaviour Spat.Geometry
+
+    @impl Spat.Geometry
+    def index(point, { bound_min, bound_max }, subdivisions) do
+        dimension = Spat.Coord.dimension(point)
+        vertices = (1 <<< dimension)
+
+        index(point, bound_min, bound_max, subdivisions, dimension, 0..(vertices - 1))
+        |> flatten
+    end
+
+    def index(_, _, _, 0, _, _), do: []
+    def index(point, bound_min, bound_max, subdivisions, dimension, vertices) do
+        Enum.map(vertices, fn region ->
+            { min, max } = subdivide(bound_min, bound_max, dimension, region)
+
+            if intersect(point, min, max, dimension) do
+                case flat_insert(region, index(point, min, max, subdivisions - 1, dimension, vertices)) do
+                    [] -> [region]
+                    indexes -> indexes
+                end
+            else
+                []
+            end
+        end)
+    end
+
+    defp flatten(list, flat \\ [])
+    defp flatten([], flat), do: flat
+    defp flatten([head|list], flat) when is_list(head), do: flatten(head, flatten(list, flat))
+    defp flatten(list, flat), do: [list|flat]
+
+    defp flat_insert(region, []), do: []
+    defp flat_insert(region, [[]|list]), do: flat_insert(region, list)
+    defp flat_insert(region, [head|list]) when is_list(head), do: [flat_insert(region, head)|flat_insert(region, list)]
+    defp flat_insert(region, list), do: [region|list]
+
     defp subdivide(min, max, dimension, region, sub \\ { [], [] })
     defp subdivide(_, _, 0, _, sub), do: sub
     defp subdivide(min, max, dimension, region, { sub_min, sub_max }) do
