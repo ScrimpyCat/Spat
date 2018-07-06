@@ -4,20 +4,6 @@ defmodule Spat do
     @type grid_index :: [non_neg_integer]
     @type packed_grid_index :: bitstring
     @type encoded_index :: String.t
-    @type subdivision(index) :: [index, ...]
-
-    @doc """
-      Pack a list (all subdivisions of a level) of grid indexes into a bitstring.
-
-      Dimensionality of the indexes is inferred from the list. So this list
-      must be a power of 2, and must contain a grid index for each node of
-      the subdivision for a given level.
-
-        iex> Spat.pack([[0], [], [0, 0, 0, 0], [1, 2, 3, 4]])
-        [<<0 :: 2>>, <<>>, <<0 :: 8>>, <<0 :: 2, 3 :: 2, 2 :: 2, 1 :: 2>>]
-    """
-    @spec pack(subdivision(grid_index)) :: subdivision(packed_grid_index)
-    def pack(indexes), do: Enum.map(indexes, &pack(&1, Itsy.Bit.count(Itsy.Bit.mask_lower_power_of_2(length(indexes)))))
 
     @doc """
       Pack a grid index into a bitstring.
@@ -45,19 +31,6 @@ defmodule Spat do
     """
     @spec pack(grid_index, pos_integer) :: packed_grid_index
     def pack(index, dimensions), do: Itsy.Binary.pack(index, dimensions, reverse: true)
-
-    @doc """
-      Unpack a list (all subdivisions of a level) of grid indexes from a bitstring.
-
-      Dimensionality of the indexes is inferred from the list. So this list
-      must be a power of 2, and must contain a packed grid index for each node of
-      the subdivision for a given level.
-
-        iex> Spat.unpack([<<0 :: 2>>, <<>>, <<0 :: 8>>, <<0 :: 2, 3 :: 2, 2 :: 2, 1 :: 2>>])
-        [[0], [], [0, 0, 0, 0], [1, 2, 3, 0]]
-    """
-    @spec unpack(subdivision(packed_grid_index)) :: subdivision(grid_index)
-    def unpack(indexes), do: Enum.map(indexes, &unpack(&1, Itsy.Bit.count(Itsy.Bit.mask_lower_power_of_2(length(indexes)))))
 
     @doc """
       Unpack a grid index from a bitstring.

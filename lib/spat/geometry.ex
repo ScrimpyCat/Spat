@@ -3,5 +3,5 @@ defmodule Spat.Geometry do
       Implement the behaviour for calculating the indexes of the requested
       geometry.
     """
-    @callback index(geometry :: any, bounds :: Spat.Coord.t, subdivisions :: pos_integer) :: [Spat.subdivision(Spat.grid_index)]
+    @callback index(geometry :: any, bounds :: Spat.Coord.t, subdivisions :: pos_integer) :: [Spat.grid_index]
 end
