@@ -3,6 +3,39 @@ defmodule Spat.Geometry.Point do
 
     @doc """
       Obtain the indexes of a point within the subdivided bounds.
+
+        iex> Spat.Geometry.Point.index({ 0 }, { { 0 }, { 10 } }, 1)
+        [[0]]
+
+        iex> Spat.Geometry.Point.index({ 5 }, { { 0 }, { 10 } }, 1)
+        [[0], [1]]
+
+        iex> Spat.Geometry.Point.index({ 10 }, { { 0 }, { 10 } }, 1)
+        [[1]]
+
+        iex> Spat.Geometry.Point.index({ -1 }, { { 0 }, { 10 } }, 1)
+        []
+
+        iex> Spat.Geometry.Point.index({ 2.5 }, { { 0 }, { 10 } }, 1)
+        [[0]]
+
+        iex> Spat.Geometry.Point.index({ 2.5 }, { { 0 }, { 10 } }, 2)
+        [[0, 0], [0, 1]]
+
+        iex> Spat.Geometry.Point.index({ 5, 5 }, { { 0, 0 }, { 10, 10 } }, 2)
+        [[0, 3], [1, 2], [2, 1], [3, 0]]
+
+        iex> Spat.Geometry.Point.index({ 2.5, 5 }, { { 0, 0 }, { 10, 10 } }, 2)
+        [[0, 2], [0, 3], [2, 0], [2, 1]]
+
+        iex> Spat.Geometry.Point.index({ 0, 0 }, { { 0, 0 }, { 10, 10 } }, 2)
+        [[0, 0]]
+
+        iex> Spat.Geometry.Point.index({ 12.5, 5 }, { { 10, 0 }, { 20, 10 } }, 2)
+        [[0, 2], [0, 3], [2, 0], [2, 1]]
+
+        iex> Spat.Geometry.Point.index({ 10, 0 }, { { 10, 0 }, { 20, 10 } }, 2)
+        [[0, 0]]
     """
     @spec index(Spat.Coord.t, bounds :: { Spat.Coord.t, Spat.Coord.t }, pos_integer) :: [Spat.grid_index]
     def index(point, { bound_min, bound_max }, subdivisions) do
