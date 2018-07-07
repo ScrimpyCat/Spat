@@ -12,8 +12,8 @@ defmodule Spat.Geometry.Point do
         |> flatten
     end
 
-    def index(_, _, _, 0, _, _), do: []
-    def index(point, bound_min, bound_max, subdivisions, dimension, vertices) do
+    defp index(_, _, _, 0, _, _), do: []
+    defp index(point, bound_min, bound_max, subdivisions, dimension, vertices) do
         Enum.map(vertices, fn region ->
             { min, max } = subdivide(bound_min, bound_max, dimension, region)
 
