@@ -1,9 +1,10 @@
 defmodule Spat.Geometry.Point do
     use Bitwise
 
-    @behaviour Spat.Geometry
-
-    @impl Spat.Geometry
+    @doc """
+      Obtain the indexes of a point within the subdivided bounds.
+    """
+    @spec index(Spat.Coord.t, bounds :: { Spat.Coord.t, Spat.Coord.t }, pos_integer) :: [Spat.grid_index]
     def index(point, { bound_min, bound_max }, subdivisions) do
         dimension = Spat.Coord.dimension(point)
         vertices = (1 <<< dimension)
@@ -12,10 +13,11 @@ defmodule Spat.Geometry.Point do
         |> flatten
     end
 
+    @spec index(Spat.Coord.t, Spat.Coord.t, Spat.Coord.t, non_neg_integer, pos_integer, Range.t) :: [Spat.grid_index]
     defp index(_, _, _, 0, _, _), do: []
     defp index(point, bound_min, bound_max, subdivisions, dimension, vertices) do
         Enum.map(vertices, fn region ->
-            { min, max } = subdivide(bound_min, bound_max, dimension, region)
+            { min, max } = Spat.Geometry.subdivide(bound_min, bound_max, dimension, region)
 
             if intersect(point, min, max, dimension) do
                 case flat_insert(region, index(point, min, max, subdivisions - 1, dimension, vertices)) do
@@ -38,17 +40,8 @@ defmodule Spat.Geometry.Point do
     defp flat_insert(region, [head|list]) when is_list(head), do: [flat_insert(region, head)|flat_insert(region, list)]
     defp flat_insert(region, list), do: [region|list]
 
-    defp subdivide(min, max, dimension, region, sub \\ { [], [] })
-    defp subdivide(_, _, 0, _, sub), do: sub
-    defp subdivide(min, max, dimension, region, { sub_min, sub_max }) do
-        axis = dimension - 1
-        start = Spat.Coord.get(min, axis)
-        stop = (Spat.Coord.get(max, axis) - start) / 2
-        start = if(((region >>> axis) &&& 1) == 1, do: start + stop, else: start)
-
-        subdivide(min, max, axis, region, { [start|sub_min], [(stop + start)|sub_max] })
-    end
-
+    @doc false
+    @spec intersect(Spat.Coord.t, Spat.Coord.t, Spat.Coord.t, non_neg_integer) :: boolean
     def intersect(_, _, _, 0), do: true
     def intersect(point, min, max, dimension) do
         axis = dimension - 1
