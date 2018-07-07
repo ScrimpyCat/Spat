@@ -64,6 +64,16 @@ defmodule Spat do
     @doc """
       Encode a packed grid index.
 
+      The encoding is a URL safe string. While the encoding is equivalent to the
+      `Base` module's URL-safe base64 encoding (without padding), care should be
+      taken if using those functions to encode/decode packed grid indexes. As packed
+      grid indexes are bitstrings and not binaries, using the `Base` module variants
+      (or other third party base64 functions) may result in losing information.
+
+      If you do have a workflow that requires it to be compatible with base64
+      implementations, then it is recommended you pad the packed grid index so
+      it's now a binary.
+
         iex> Spat.encode(<<0 :: 2>>)
         "A"
 
