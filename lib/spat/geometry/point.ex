@@ -36,6 +36,12 @@ defmodule Spat.Geometry.Point do
 
         iex> Spat.Geometry.Point.index({ 10, 0 }, { { 10, 0 }, { 20, 10 } }, 2)
         [[0, 0]]
+
+        iex> Spat.Geometry.Point.index({ 0 }, { { -10 }, { 10 } }, 1)
+        [[0], [1]]
+
+        iex> Spat.Geometry.Point.index({ -5 }, { { -10 }, { 10 } }, 2)
+        [[0, 0], [0, 1]]
     """
     @spec index(Spat.Coord.t, bounds :: { Spat.Coord.t, Spat.Coord.t }, pos_integer) :: [Spat.grid_index]
     def index(point, { bound_min, bound_max }, subdivisions) do

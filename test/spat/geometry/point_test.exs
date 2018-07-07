@@ -8,6 +8,8 @@ defmodule Spat.Geometry.PointTest do
         assert true == Spat.Geometry.Point.intersect({ 0.5 }, { 0 }, { 1 }, 1)
         assert false == Spat.Geometry.Point.intersect({ -1 }, { 0 }, { 1 }, 1)
         assert false == Spat.Geometry.Point.intersect({ 1.1 }, { 0 }, { 1 }, 1)
+        assert true == Spat.Geometry.Point.intersect({ -1 }, { -1 }, { 0 }, 1)
+        assert false == Spat.Geometry.Point.intersect({ 1 }, { -1 }, { 0 }, 1)
 
         assert false == Spat.Geometry.Point.intersect({ 0, 0, 0 }, { 0, 1, 2 }, { 1, 2, 3 }, 3)
         assert false == Spat.Geometry.Point.intersect({ 0, 1, 0 }, { 0, 1, 2 }, { 1, 2, 3 }, 3)
