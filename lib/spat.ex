@@ -137,7 +137,7 @@ defmodule Spat do
       iex> Spat.to_bounds([0, 0, 0], Spat.Bounds.new({ 10, 10 }))
       Spat.Bounds.new([0, 0], [1.25, 1.25])
     """
-    @spec to_bounds(packed_grid_index, Spat.Bounds.t) :: Spat.Bounds.t
+    @spec to_bounds(grid_index, Spat.Bounds.t) :: Spat.Bounds.t
     def to_bounds([], bounds), do: bounds
     def to_bounds([region|index], bounds), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
 end
