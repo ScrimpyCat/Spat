@@ -111,4 +111,18 @@ defmodule Spat do
         <<index :: bitstring-size(size), _ :: bitstring>> = index
         index
     end
+
+    @doc """
+      Get the bounds a grid index references.
+
+      iex> bounds = Spat.Bounds.new({ 10, 10 })
+      ...> point = {2.6,0}
+      ...> subsivisions = 2
+      ...> indexes = Spat.Geometry.Point.index(point, bounds, subsivisions)
+      ...> Enum.map(indexes, &Spat.to_bounds(&1, bounds))
+      [Spat.Bounds.new([2.5, 0], [5.0, 2.5])]
+    """
+    @spec to_bounds(packed_grid_index, Spat.Bounds.t) :: Spat.Bounds.t
+    def to_bounds([], bounds), do: bounds
+    def to_bounds([region|index], bounds), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
 end
