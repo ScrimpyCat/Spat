@@ -5,7 +5,7 @@ defmodule Spat do
     @type grid_index :: [non_neg_integer]
     @type packed_grid_index :: bitstring
     @type encoded_index :: String.t
-    @type address_modes :: :clamp
+    @type address_modes :: :clamp | :wrap
 
     @doc """
       Pack a grid index into a bitstring.
@@ -160,18 +160,19 @@ defmodule Spat do
 
     @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: grid_index
     def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp) do
-        max = Itsy.Bit.set(subdivisions)
-
         { literals, _ } =
             index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
             |> Enum.map_reduce(0, case mode do
-                :clamp -> fn value, axis ->
-                    case value + Spat.Coord.get(offset, axis) do
-                        total when total > max -> { max, axis + 1 }
-                        total when total < 0 -> { 0, axis + 1 }
-                        total -> { total, axis + 1 }
+                :clamp ->
+                    max = Itsy.Bit.set(subdivisions)
+                    fn value, axis ->
+                        case value + Spat.Coord.get(offset, axis) do
+                            total when total > max -> { max, axis + 1 }
+                            total when total < 0 -> { 0, axis + 1 }
+                            total -> { total, axis + 1 }
+                        end
                     end
-                end
+                :wrap -> &({ &1 + Spat.Coord.get(offset, &2), &2 + 1 })
             end)
 
         literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
