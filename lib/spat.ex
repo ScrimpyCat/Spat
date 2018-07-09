@@ -1,9 +1,11 @@
 defmodule Spat do
     require Itsy.Binary
+    use Bitwise
 
     @type grid_index :: [non_neg_integer]
     @type packed_grid_index :: bitstring
     @type encoded_index :: String.t
+    @type address_modes :: :clamp
 
     @doc """
       Pack a grid index into a bitstring.
@@ -140,4 +142,38 @@ defmodule Spat do
     @spec to_bounds(grid_index, Spat.Bounds.t) :: Spat.Bounds.t
     def to_bounds([], bounds), do: bounds
     def to_bounds([region|index], bounds), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
+
+    defp index_to_literals([], literals), do: literals
+    defp index_to_literals([region|index], literals) do
+        { literals, _ } = Enum.map_reduce(literals, region, &({ (&1 <<< 1) ||| (&2 &&& 1), &2 >>> 1 }))
+        index_to_literals(index, literals)
+    end
+
+    defp literals_to_index(literals, index, count, axis \\ 0)
+    defp literals_to_index([], index, count, axis), do: index
+    defp literals_to_index([value|literals], index, count, axis) do
+        { index, _ } = Enum.map_reduce(index, count, fn region, sub ->
+            { region ||| (((value >>> sub) &&& 1) <<< axis), sub - 1 }
+        end)
+        literals_to_index(literals, index, count, axis + 1)
+    end
+
+    @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: grid_index
+    def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp) do
+        max = Itsy.Bit.set(subdivisions)
+
+        { literals, _ } =
+            index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
+            |> Enum.map_reduce(0, case mode do
+                :clamp -> fn value, axis ->
+                    case value + Spat.Coord.get(offset, axis) do
+                        total when total > max -> { max, axis + 1 }
+                        total when total < 0 -> { 0, axis + 1 }
+                        total -> { total, axis + 1 }
+                    end
+                end
+            end)
+
+        literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
+    end
 end
