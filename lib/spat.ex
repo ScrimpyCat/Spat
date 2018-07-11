@@ -150,7 +150,7 @@ defmodule Spat do
     end
 
     defp literals_to_index(literals, index, count, axis \\ 0)
-    defp literals_to_index([], index, count, axis), do: index
+    defp literals_to_index([], index, _, _), do: index
     defp literals_to_index([value|literals], index, count, axis) do
         { index, _ } = Enum.map_reduce(index, count, fn region, sub ->
             { region ||| (((value >>> sub) &&& 1) <<< axis), sub - 1 }
