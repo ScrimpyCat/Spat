@@ -198,9 +198,20 @@ defmodule Spat do
 
         iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, :wrap)
         [1, 1]
+
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, :clamp)
+        Spat.pack([1, 1], 2)
+
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, :wrap)
+        Spat.pack([0, 1], 2)
+
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { -1, 0 }, :wrap)
+        Spat.pack([1, 1], 2)
     """
     @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: grid_index
-    def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp) do
+    @spec adjacent(packed_grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: packed_grid_index
+    def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp)
+    def adjacent(index, dimensions, subdivisions, offset, mode) when is_list(index) do
         { literals, _ } =
             index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
             |> Enum.map_reduce(0, case mode do
@@ -218,4 +229,5 @@ defmodule Spat do
 
         literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
     end
+    def adjacent(index, dimensions, subdivisions, offset, mode), do: unpack(index, dimensions) |> adjacent(dimensions, subdivisions, offset, mode) |> pack(dimensions)
 end
