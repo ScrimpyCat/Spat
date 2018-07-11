@@ -158,6 +158,40 @@ defmodule Spat do
         literals_to_index(literals, index, count, axis + 1)
     end
 
+    @doc """
+      Get the index adjacent to the another index given a certain offset.
+
+      Addressing modes can be provided to specify the behaviour when referencing
+      an index that is beyond the maximum bounds.
+
+      * `:clamp` - Will clamp the bounds from min to max.
+      * `:wrap` - Will start from the opposing side.
+
+        iex> bounds = Spat.Bounds.new({ 10, 10 })
+        ...> point = {2.6,0}
+        ...> subsivisions = 2
+        ...> [index] = Spat.Geometry.Point.index(point, bounds, subsivisions)
+        ...> Spat.to_bounds(Spat.adjacent(index, Spat.Coord.dimension(point), subsivisions, { 1, 2 }), bounds)
+        Spat.Bounds.new([5.0, 5.0], [7.5, 7.5])
+
+        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, :clamp)
+        [1, 1]
+
+        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, :clamp)
+        [1, 1]
+
+        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, :wrap)
+        [0, 0]
+
+        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, :wrap)
+        [0, 1]
+
+        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, :clamp)
+        [0, 0]
+
+        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, :wrap)
+        [1, 1]
+    """
     @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: grid_index
     def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp) do
         { literals, _ } =
