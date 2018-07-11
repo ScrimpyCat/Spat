@@ -138,10 +138,17 @@ defmodule Spat do
 
         iex> Spat.to_bounds([0, 0, 0], Spat.Bounds.new({ 10, 10 }))
         Spat.Bounds.new([0, 0], [1.25, 1.25])
+
+        iex> Spat.to_bounds(Spat.pack([3], 2), Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([5.0, 5.0], [10.0, 10.0])
+
+        iex> Spat.to_bounds(Spat.pack([0, 0, 0], 2), Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([0, 0], [1.25, 1.25])
     """
-    @spec to_bounds(grid_index, Spat.Bounds.t) :: Spat.Bounds.t
+    @spec to_bounds(grid_index | packed_grid_index, Spat.Bounds.t) :: Spat.Bounds.t
     def to_bounds([], bounds), do: bounds
     def to_bounds([region|index], bounds), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
+    def to_bounds(index, bounds), do: unpack(index, bounds.dimension) |> to_bounds(bounds)
 
     defp index_to_literals([], literals), do: literals
     defp index_to_literals([region|index], literals) do
