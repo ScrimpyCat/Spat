@@ -117,27 +117,27 @@ defmodule Spat do
     @doc """
       Get the bounds a grid index references.
 
-      iex> bounds = Spat.Bounds.new({ 10, 10 })
-      ...> point = {2.6,0}
-      ...> subsivisions = 2
-      ...> indexes = Spat.Geometry.Point.index(point, bounds, subsivisions)
-      ...> Enum.map(indexes, &Spat.to_bounds(&1, bounds))
-      [Spat.Bounds.new([2.5, 0], [5.0, 2.5])]
+        iex> bounds = Spat.Bounds.new({ 10, 10 })
+        ...> point = {2.6,0}
+        ...> subsivisions = 2
+        ...> indexes = Spat.Geometry.Point.index(point, bounds, subsivisions)
+        ...> Enum.map(indexes, &Spat.to_bounds(&1, bounds))
+        [Spat.Bounds.new([2.5, 0], [5.0, 2.5])]
 
-      iex> Spat.to_bounds([0], Spat.Bounds.new({ 10, 10 }))
-      Spat.Bounds.new([0, 0], [5.0, 5.0])
+        iex> Spat.to_bounds([0], Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([0, 0], [5.0, 5.0])
 
-      iex> Spat.to_bounds([1], Spat.Bounds.new({ 10, 10 }))
-      Spat.Bounds.new([5.0, 0], [10.0, 5.0])
+        iex> Spat.to_bounds([1], Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([5.0, 0], [10.0, 5.0])
 
-      iex> Spat.to_bounds([2], Spat.Bounds.new({ 10, 10 }))
-      Spat.Bounds.new([0, 5.0], [5.0, 10.0])
+        iex> Spat.to_bounds([2], Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([0, 5.0], [5.0, 10.0])
 
-      iex> Spat.to_bounds([3], Spat.Bounds.new({ 10, 10 }))
-      Spat.Bounds.new([5.0, 5.0], [10.0, 10.0])
+        iex> Spat.to_bounds([3], Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([5.0, 5.0], [10.0, 10.0])
 
-      iex> Spat.to_bounds([0, 0, 0], Spat.Bounds.new({ 10, 10 }))
-      Spat.Bounds.new([0, 0], [1.25, 1.25])
+        iex> Spat.to_bounds([0, 0, 0], Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([0, 0], [1.25, 1.25])
     """
     @spec to_bounds(grid_index, Spat.Bounds.t) :: Spat.Bounds.t
     def to_bounds([], bounds), do: bounds
