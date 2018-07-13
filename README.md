@@ -1,6 +1,6 @@
 # Spat
 
-Spat is a spatial hashing library. That is used for hashing geometries in linear regions for n-dimensions.
+Spat is a spatial hashing library. Used for hashing geometries in linear regions for n-dimensions.
 
 ## How it works
 
@@ -44,7 +44,7 @@ The above represents the indices of the first subdivision of this 2D space.
 
 The above represents the indices of the second subdivision of this 2D space. This process keeps repeating for the desired number of subdivisions.
 
-When some calculating the index for a given geometry, it looks up where it is located in the subdivided region and the resulting location(s) is its index.
+When calculating the index for a given geometry, it looks up where it is located in the subdivided region and the resulting location(s) is its index.
 
 ```bob
                       100,100
@@ -136,13 +136,13 @@ Spat.encode(packed_index)
 # => "k"
 ```
 
-### Supported Geometries
+## Supported Geometries
 
 Currently the only supported geometries are:
 
 * `Spat.Geometry.Point` - n-dimensional points
 
-### Indexing Latitude/Longitude
+## Indexing Latitude/Longitude
 
 While you can index any arbitrary coordinate system, this library does not provide any kind of projection, so for non-linear coordinate systems there will be a degree of error (amount of error depends on the coordinate system).
 
