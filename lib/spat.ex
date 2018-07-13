@@ -10,6 +10,8 @@ defmodule Spat do
     @type packed_grid_index :: bitstring
     @type encoded_index :: String.t
     @type address_modes :: :clamp | :wrap
+    @type packing_options :: [reverse: boolean]
+    @type unpacking_options :: packing_options
 
     @doc """
       Pack a grid index into a bitstring.
@@ -27,16 +29,19 @@ defmodule Spat do
         <<0 :: 8>>
 
         iex> Spat.pack([1, 2, 3, 4], 2)
+        <<1 :: 2, 2 :: 2, 3 :: 2, 0 :: 2>>
+
+        iex> Spat.pack([1, 2, 3, 4], 2, reverse: true)
         <<0 :: 2, 3 :: 2, 2 :: 2, 1 :: 2>>
 
-        iex> Spat.pack([1, 2, 3, 4], 3)
+        iex> Spat.pack([1, 2, 3, 4], 3, reverse: true)
         <<4 :: 3, 3 :: 3, 2 :: 3, 1 :: 3>>
 
-        iex> Spat.pack([1, 2, 3, 4000], 12)
+        iex> Spat.pack([1, 2, 3, 4000], 12, reverse: true)
         <<4000 :: 12, 3 :: 12, 2 :: 12, 1 :: 12>>
     """
-    @spec pack(grid_index, pos_integer) :: packed_grid_index
-    def pack(index, dimensions), do: Itsy.Binary.pack(index, dimensions, reverse: true)
+    @spec pack(grid_index, pos_integer, packing_options) :: packed_grid_index
+    def pack(index, dimensions, opts \\ []), do: Itsy.Binary.pack(index, dimensions, reverse: opts[:reverse] || false)
 
     @doc """
       Unpack a grid index from a bitstring.
@@ -53,14 +58,17 @@ defmodule Spat do
         iex> Spat.unpack(<<0 :: 8>>, 2)
         [0, 0, 0, 0]
 
-        iex> Spat.unpack(<<0 :: 2, 3 :: 2, 2 :: 2, 1 :: 2>>, 2)
+        iex> Spat.unpack(<<1 :: 2, 2 :: 2, 3 :: 2, 0 :: 2>>, 2)
         [1, 2, 3, 0]
 
-        iex> Spat.unpack(<<4000 :: 12, 3 :: 12, 2 :: 12, 1 :: 12>>, 12)
+        iex> Spat.unpack(<<0 :: 2, 3 :: 2, 2 :: 2, 1 :: 2>>, 2, reverse: true)
+        [1, 2, 3, 0]
+
+        iex> Spat.unpack(<<4000 :: 12, 3 :: 12, 2 :: 12, 1 :: 12>>, 12, reverse: true)
         [1, 2, 3, 4000]
     """
-    @spec unpack(packed_grid_index, pos_integer) :: grid_index
-    def unpack(index, dimensions), do: Itsy.Binary.unpack(index, dimensions, reverse: true)
+    @spec unpack(packed_grid_index, pos_integer, unpacking_options) :: grid_index
+    def unpack(index, dimensions, opts \\ []), do: Itsy.Binary.unpack(index, dimensions, reverse: opts[:reverse] || false)
 
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
     |> String.graphemes
@@ -148,11 +156,18 @@ defmodule Spat do
 
         iex> Spat.to_bounds(Spat.pack([0, 0, 0], 2), Spat.Bounds.new({ 10, 10 }))
         Spat.Bounds.new([0, 0], [1.25, 1.25])
+
+        iex> Spat.to_bounds(Spat.pack([0, 0, 1], 2), Spat.Bounds.new({ 10, 10 }))
+        Spat.Bounds.new([1.25, 0], [2.5, 1.25])
+
+        iex> Spat.to_bounds(Spat.pack([0, 0, 1], 2, reverse: true), Spat.Bounds.new({ 10, 10 }), reverse: true)
+        Spat.Bounds.new([1.25, 0], [2.5, 1.25])
     """
-    @spec to_bounds(grid_index | packed_grid_index, Spat.Bounds.t) :: Spat.Bounds.t
-    def to_bounds([], bounds), do: bounds
-    def to_bounds([region|index], bounds), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
-    def to_bounds(index, bounds), do: unpack(index, bounds.dimension) |> to_bounds(bounds)
+    @spec to_bounds(grid_index | packed_grid_index, Spat.Bounds.t, unpacking_options) :: Spat.Bounds.t
+    def to_bounds(index, bounds, opts \\ [])
+    def to_bounds([], bounds, _), do: bounds
+    def to_bounds([region|index], bounds, _), do: to_bounds(index, Spat.Bounds.subdivide(bounds, region))
+    def to_bounds(index, bounds, opts), do: unpack(index, bounds.dimension, opts) |> to_bounds(bounds)
 
     defp index_to_literals([], literals), do: literals
     defp index_to_literals([region|index], literals) do
@@ -172,10 +187,11 @@ defmodule Spat do
     @doc """
       Get the index adjacent to the another index given a certain offset.
 
-      Addressing modes can be provided to specify the behaviour when referencing
-      an index that is beyond the maximum bounds.
+      Addressing modes can be provided (`[addressing: mode]`) to specify the
+      behaviour when referencing an index that is beyond the maximum bounds. The
+      possible addressing modes are:
 
-      * `:clamp` - Will clamp the bounds from min to max.
+      * `:clamp` - Will clamp the bounds from min to max. _(default)_
       * `:wrap` - Will start from the opposing side.
 
         iex> bounds = Spat.Bounds.new({ 10, 10 })
@@ -185,40 +201,46 @@ defmodule Spat do
         ...> Spat.to_bounds(Spat.adjacent(index, Spat.Coord.dimension(point), subdivisions, { 1, 2 }), bounds)
         Spat.Bounds.new([5.0, 5.0], [7.5, 7.5])
 
-        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, :clamp)
+        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, addressing: :clamp)
         [1, 1]
 
-        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, :clamp)
+        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, addressing: :clamp)
         [1, 1]
 
-        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, :wrap)
+        iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, addressing: :wrap)
         [0, 0]
 
-        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, :wrap)
+        iex> Spat.adjacent([0, 0], 2, 2, { 5, 0 }, addressing: :wrap)
         [0, 1]
 
-        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, :clamp)
+        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, addressing: :clamp)
         [0, 0]
 
-        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, :wrap)
+        iex> Spat.adjacent([0, 0], 2, 2, { -1, 0 }, addressing: :wrap)
         [1, 1]
 
-        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, :clamp)
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, addressing: :clamp)
         Spat.pack([1, 1], 2)
 
-        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, :wrap)
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { 5, 0 }, addressing: :wrap)
         Spat.pack([0, 1], 2)
 
-        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { -1, 0 }, :wrap)
+        iex> Spat.adjacent(Spat.pack([0, 0], 2), 2, 2, { -1, 0 }, addressing: :wrap)
         Spat.pack([1, 1], 2)
+
+        iex> Spat.adjacent(Spat.pack([0, 1], 2), 2, 2, { 0, 0 })
+        Spat.pack([0, 1], 2)
+
+        iex> Spat.adjacent(Spat.pack([0, 1], 2, reverse: true), 2, 2, { 0, 0 }, reverse: true)
+        Spat.pack([0, 1], 2, reverse: true)
     """
-    @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: grid_index
-    @spec adjacent(packed_grid_index, pos_integer, pos_integer, Spat.Coord.t, address_modes) :: packed_grid_index
-    def adjacent(index, dimensions, subdivisions, offset, mode \\ :clamp)
-    def adjacent(index, dimensions, subdivisions, offset, mode) when is_list(index) do
+    @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, [addressing: address_modes]) :: grid_index
+    @spec adjacent(packed_grid_index, pos_integer, pos_integer, Spat.Coord.t, packing_options | unpacking_options | [addressing: address_modes]) :: packed_grid_index
+    def adjacent(index, dimensions, subdivisions, offset, opts \\ [])
+    def adjacent(index, dimensions, subdivisions, offset, opts) when is_list(index) do
         { literals, _ } =
             index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
-            |> Enum.map_reduce(0, case mode do
+            |> Enum.map_reduce(0, case (opts[:addressing] || :clamp) do
                 :clamp ->
                     max = Itsy.Bit.set(subdivisions)
                     fn value, axis ->
@@ -233,5 +255,5 @@ defmodule Spat do
 
         literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
     end
-    def adjacent(index, dimensions, subdivisions, offset, mode), do: unpack(index, dimensions) |> adjacent(dimensions, subdivisions, offset, mode) |> pack(dimensions)
+    def adjacent(index, dimensions, subdivisions, offset, opts), do: unpack(index, dimensions, opts) |> adjacent(dimensions, subdivisions, offset, opts) |> pack(dimensions, opts)
 end
