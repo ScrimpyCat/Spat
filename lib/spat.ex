@@ -1,4 +1,8 @@
 defmodule Spat do
+    @moduledoc """
+      Functions for dealing with indexes.
+    """
+
     require Itsy.Binary
     use Bitwise
 
@@ -119,8 +123,8 @@ defmodule Spat do
 
         iex> bounds = Spat.Bounds.new({ 10, 10 })
         ...> point = {2.6,0}
-        ...> subsivisions = 2
-        ...> indexes = Spat.Geometry.Point.index(point, bounds, subsivisions)
+        ...> subdivisions = 2
+        ...> indexes = Spat.Geometry.Point.index(point, bounds, subdivisions)
         ...> Enum.map(indexes, &Spat.to_bounds(&1, bounds))
         [Spat.Bounds.new([2.5, 0], [5.0, 2.5])]
 
@@ -176,9 +180,9 @@ defmodule Spat do
 
         iex> bounds = Spat.Bounds.new({ 10, 10 })
         ...> point = {2.6,0}
-        ...> subsivisions = 2
-        ...> [index] = Spat.Geometry.Point.index(point, bounds, subsivisions)
-        ...> Spat.to_bounds(Spat.adjacent(index, Spat.Coord.dimension(point), subsivisions, { 1, 2 }), bounds)
+        ...> subdivisions = 2
+        ...> [index] = Spat.Geometry.Point.index(point, bounds, subdivisions)
+        ...> Spat.to_bounds(Spat.adjacent(index, Spat.Coord.dimension(point), subdivisions, { 1, 2 }), bounds)
         Spat.Bounds.new([5.0, 5.0], [7.5, 7.5])
 
         iex> Spat.adjacent([0, 0], 2, 2, { 4, 0 }, :clamp)
