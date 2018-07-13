@@ -68,57 +68,13 @@ For instance if we have the bounds starting from `0,0` to `100,100`, and working
 
 ```elixir
 bounds = Spat.Bounds.new({ 100, 100 })
-point = {60, 48}
+point = { 60, 48 }
 subdivisions = 2
 Spat.Geometry.Point.index(point, bounds, subdivisions)
 # => [[1, 2]]
 ```
 
 While in 3D space it would be adapted as follows:
-
-```bob
-                              +-------------+-------------+
-                             /             /              |
-                            /      6      /      7      / |
-                           +-------------+-------------   |
-                          /             /              |  |
-                         /      2      /      3      / |7 |
-   +- -- -- -- --       + -- -- -- -- + -- -- -- --    |  +
-                 |      |             |             |  | /|
- /      4      /        |             |              3 |/ |
-  -- -- -- --    |      |      2      |      3      |  +  |
-|             |         |             |               /|  |
-               4 |      |             |             |/ |5 |
-|      4      |         +-------------+-------------+  |  +
-                /   --> |             |             |  | /
-|             |         |             |              1 |/
-  -- -- -- --           |      0      |      1      |  +
-                        |             |               /
-                        |             |             |/
-                        +-------------+-------------+
-```
-
-```bob
-      +---------------------------+   ->   +-------------+-------------+
-     /                           /|       /             /              |
-    /                           / |      /     1,6     /     1,7     / |
-   /             1             /  |     +-------------+-------------   |
-  /                           /   |    /             /              |  |
- /                           /    |   /     1,2     /     1,3     / 1,7|
-+---------------------------+     |  + -- -- -- -- + -- -- -- --    |  +
-|                           |     |  |             |             |  | /|
-|                           |     |  |             |              3 |/ |
-|                           |  1  |  |     1,2     |     1,3     |  +  |
-|                           |     |  |             |               /|  |
-|                           |     |  |             |             |/ 1,5|
-|             1             |     +  +-------------+-------------+  |  +
-|                           |    /   |             |             |  | /
-|                           |   /    |             |             1,1|/
-|                           |  /     |     1,0     |     1,1     |  +
-|                           | /      |             |               /
-|                           |/       |             |             |/
-+---------------------------+   ->   +-------------+-------------+
-```
 
 ```bob
       +-------------+-------------+        +-------------+-------------+
@@ -142,6 +98,30 @@ While in 3D space it would be adapted as follows:
 +-------------+-------------+        +-------------+-------------+
 ```
 
+```elixir
+bounds = Spat.Bounds.new({ 100, 100, 100 })
+point = { 60, 48, 50 }
+subdivisions = 2
+Spat.Geometry.Point.index(point, bounds, subdivisions)
+# => [[1, 6], [5, 2]]
+```
+
+This can be scaled up to any dimension, such as 6D or 20D (**note:** While this is possible, this library is currently not optimised for higher dimension work).
+
+```elixir
+bounds = Spat.Bounds.new({ 100, 100, 100, 100, 100, 100 })
+point = { 60, 48, 0, 0, 0, 50 }
+subdivisions = 2
+Spat.Geometry.Point.index(point, bounds, subdivisions)
+# => [[1, 34], [33, 2]]
+
+dimensions = 20
+bounds = Spat.Bounds.new(Stream.repeatedly(fn -> 100 end) |> Enum.take(dimensions))
+point = [60, 48|(Stream.repeatedly(fn -> 0 end) |> Enum.take(dimensions - 3)) ++ [50]]
+subdivisions = 2
+Spat.Geometry.Point.index(point, bounds, subdivisions)
+# => [[1, 524290], [524289, 2]]
+```
 
 #### Packing and Encoding
 
