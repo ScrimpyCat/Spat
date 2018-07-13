@@ -135,3 +135,9 @@ packed_index = Spat.pack([1,2], 2) # => <<9::size(4)>>
 Spat.encode(packed_index)
 # => "k"
 ```
+
+### Supported Geometries
+
+Currently the only supported geometries are:
+
+* `Spat.Geometry.Point` - n-dimensional points
