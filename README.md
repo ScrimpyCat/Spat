@@ -127,7 +127,7 @@ Spat.Geometry.Point.index(point, bounds, subdivisions)
 
 Indexes can then be packed and encoded to improve storage and lookup speed.
 
-An index of `[1,2]` for a 2D space could be packed into 4 bits `<<9::size(4)>>`. This bitstring can then be encoded into a string of (almost equivalent to `Base.url_encode64/2`) URL-safe printable characters `"k"`.
+An index of `[1,2]` for a 2D space could be packed into 4 bits `<<6::size(4)>>`. This bitstring can then be encoded into a string of (almost equivalent to `Base.url_encode64/2`) URL-safe printable characters `"Y"`.
 
 ```elixir
 index = [1, 2]
