@@ -131,9 +131,9 @@ An index of `[1,2]` for a 2D space could be packed into 4 bits `<<9::size(4)>>`.
 
 ```elixir
 index = [1, 2]
-packed_index = Spat.pack([1,2], 2) # => <<9::size(4)>>
+packed_index = Spat.pack([1,2], 2) # => <<6::size(4)>>
 Spat.encode(packed_index)
-# => "k"
+# => "Y"
 ```
 
 ## Supported Geometries
