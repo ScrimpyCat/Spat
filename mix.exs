@@ -4,10 +4,12 @@ defmodule Spat.MixProject do
     def project do
         [
             app: :spat,
+            description: "A spatial hashing library",
             version: "0.1.0",
             elixir: "~> 1.6",
             start_permanent: Mix.env() == :prod,
             deps: deps(),
+            package: package(),
             dialyzer: [plt_add_deps: :transitive],
             docs: [
                 main: "readme",
@@ -32,6 +34,14 @@ defmodule Spat.MixProject do
             { :simple_markdown, "~> 0.5.3", only: :dev, runtime: false },
             { :ex_doc_simple_markdown, "~> 0.3", only: :dev, runtime: false },
             { :simple_markdown_extension_svgbob, "~> 0.1", only: :dev, runtime: false }
+        ]
+    end
+
+    defp package do
+        [
+            maintainers: ["Stefan Johnson"],
+            licenses: ["BSD 2-Clause"],
+            links: %{ "GitHub" => "https://github.com/ScrimpyCat/Spat" }
         ]
     end
 end

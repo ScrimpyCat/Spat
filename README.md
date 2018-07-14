@@ -147,3 +147,11 @@ Currently the only supported geometries are:
 While you can index any arbitrary coordinate system, this library does not provide any kind of projection, so for non-linear coordinate systems there will be a degree of error (amount of error depends on the coordinate system).
 
 With that said for certain use cases this may work good enough, with or without projecting it to a linear space beforehand.
+
+Installation
+------------
+```elixir
+def deps do
+    [{ :spat, "~> 0.1.0" }]
+end
+```
