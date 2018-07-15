@@ -153,6 +153,6 @@ Installation
 ------------
 ```elixir
 def deps do
-    [{ :spat, "~> 0.1.0" }]
+    [{ :spat, "~> 0.2.0" }]
 end
 ```
