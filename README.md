@@ -141,6 +141,7 @@ Spat.encode(packed_index)
 Currently the only supported geometries are:
 
 * `Spat.Geometry.Point` - n-dimensional points
+* `Spat.Geometry.Sphere` - n-dimensional sphere (n-sphere)
 
 ## Indexing Latitude/Longitude
 
