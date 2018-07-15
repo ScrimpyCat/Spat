@@ -47,39 +47,7 @@ defmodule Spat.Geometry.Sphere do
         [[0, 0], [0, 1]]
     """
     @spec index(Spat.Coord.t, number, Spat.Bounds.t, pos_integer) :: [Spat.grid_index]
-    def index(origin, radius, bounds = %{ dimension: dimension }, subdivisions) do
-        vertices = (1 <<< dimension)
-
-        index(origin, radius, bounds, subdivisions, 0..(vertices - 1))
-        |> flatten
-    end
-
-    @spec index(Spat.Coord.t, number, Spat.Bounds.t, non_neg_integer, Range.t) :: [Spat.grid_index]
-    defp index(_, _, _, 0, _), do: []
-    defp index(origin, radius, bounds, subdivisions, vertices) do
-        Enum.map(vertices, fn region ->
-            bounds = Spat.Bounds.subdivide(bounds, region)
-
-            if intersect(origin, radius, bounds) do
-                case flat_insert(region, index(origin, radius, bounds, subdivisions - 1, vertices)) do
-                    [] -> [region]
-                    indexes -> indexes
-                end
-            else
-                []
-            end
-        end)
-    end
-
-    defp flatten(list, flat \\ [])
-    defp flatten([], flat), do: flat
-    defp flatten([head|list], flat) when is_list(head), do: flatten(head, flatten(list, flat))
-    defp flatten(list, flat), do: [list|flat]
-
-    defp flat_insert(_, []), do: []
-    defp flat_insert(region, [[]|list]), do: flat_insert(region, list)
-    defp flat_insert(region, [head|list]) when is_list(head), do: [flat_insert(region, head)|flat_insert(region, list)]
-    defp flat_insert(region, list), do: [region|list]
+    def index(origin, radius, bounds, subdivisions), do: Spat.Geometry.index({ origin, radius }, bounds, subdivisions, fn { origin, radius }, bounds -> intersect(origin, radius, bounds) end)
 
     @doc """
       Check whether a sphere intersects with the given bounds (equal to or contained

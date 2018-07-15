@@ -44,39 +44,7 @@ defmodule Spat.Geometry.Point do
         [[0, 0], [0, 1]]
     """
     @spec index(Spat.Coord.t, Spat.Bounds.t, pos_integer) :: [Spat.grid_index]
-    def index(point, bounds = %{ dimension: dimension }, subdivisions) do
-        vertices = (1 <<< dimension)
-
-        index(point, bounds, subdivisions, 0..(vertices - 1))
-        |> flatten
-    end
-
-    @spec index(Spat.Coord.t, Spat.Bounds.t, non_neg_integer, Range.t) :: [Spat.grid_index]
-    defp index(_, _, 0, _), do: []
-    defp index(point, bounds, subdivisions, vertices) do
-        Enum.map(vertices, fn region ->
-            bounds = Spat.Bounds.subdivide(bounds, region)
-
-            if intersect(point, bounds) do
-                case flat_insert(region, index(point, bounds, subdivisions - 1, vertices)) do
-                    [] -> [region]
-                    indexes -> indexes
-                end
-            else
-                []
-            end
-        end)
-    end
-
-    defp flatten(list, flat \\ [])
-    defp flatten([], flat), do: flat
-    defp flatten([head|list], flat) when is_list(head), do: flatten(head, flatten(list, flat))
-    defp flatten(list, flat), do: [list|flat]
-
-    defp flat_insert(_, []), do: []
-    defp flat_insert(region, [[]|list]), do: flat_insert(region, list)
-    defp flat_insert(region, [head|list]) when is_list(head), do: [flat_insert(region, head)|flat_insert(region, list)]
-    defp flat_insert(region, list), do: [region|list]
+    def index(point, bounds, subdivisions), do: Spat.Geometry.index(point, bounds, subdivisions, &intersect/2)
 
     @doc """
       Check whether a point intersects with the given bounds (equal to or contained
