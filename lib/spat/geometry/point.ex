@@ -44,7 +44,7 @@ defmodule Spat.Geometry.Point do
         [[0, 0], [0, 1]]
     """
     @spec index(Spat.Coord.t, Spat.Bounds.t, pos_integer) :: [Spat.grid_index]
-    def index(point, bounds, subdivisions), do: Spat.Geometry.index(point, bounds, subdivisions, &intersect/2)
+    def index(point, bounds, subdivisions), do: Spat.Geometry.index(&intersect(point, &1), bounds, subdivisions)
 
     @doc """
       Check whether a point intersects with the given bounds (equal to or contained

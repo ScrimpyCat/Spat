@@ -47,7 +47,7 @@ defmodule Spat.Geometry.Sphere do
         [[0, 0], [0, 1]]
     """
     @spec index(Spat.Coord.t, number, Spat.Bounds.t, pos_integer) :: [Spat.grid_index]
-    def index(origin, radius, bounds, subdivisions), do: Spat.Geometry.index({ origin, radius }, bounds, subdivisions, fn { origin, radius }, bounds -> intersect(origin, radius, bounds) end)
+    def index(origin, radius, bounds, subdivisions), do: Spat.Geometry.index(&intersect(origin, radius, &1), bounds, subdivisions)
 
     @doc """
       Check whether a sphere intersects with the given bounds (equal to or contained

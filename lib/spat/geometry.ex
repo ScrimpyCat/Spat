@@ -2,22 +2,22 @@ defmodule Spat.Geometry do
     use Bitwise
 
     @doc false
-    @spec index(any, Spat.Bounds.t, pos_integer, ((any, Spat.Bounds.t) -> boolean)) :: [Spat.grid_index]
-    def index(geometry, bounds = %{ dimension: dimension }, subdivisions, intersect) do
+    @spec index((Spat.Bounds.t -> boolean), Spat.Bounds.t, pos_integer) :: [Spat.grid_index]
+    def index(intersect, bounds = %{ dimension: dimension }, subdivisions) do
         vertices = (1 <<< dimension)
 
-        index(geometry, bounds, subdivisions, 0..(vertices - 1), intersect)
+        index(intersect, bounds, subdivisions, 0..(vertices - 1))
         |> flatten
     end
 
-    @spec index(any, Spat.Bounds.t, non_neg_integer, Range.t, ((any, Spat.Bounds.t) -> boolean)) :: [Spat.grid_index]
-    defp index(_, _, 0, _, _), do: []
-    defp index(geometry, bounds, subdivisions, vertices, intersect) do
+    @spec index((Spat.Bounds.t -> boolean), Spat.Bounds.t, non_neg_integer, Range.t) :: [Spat.grid_index]
+    defp index(_, _, 0, _), do: []
+    defp index(intersect, bounds, subdivisions, vertices) do
         Enum.map(vertices, fn region ->
             bounds = Spat.Bounds.subdivide(bounds, region)
 
-            if intersect.(geometry, bounds) do
-                case flat_insert(region, index(geometry, bounds, subdivisions - 1, vertices, intersect)) do
+            if intersect.(bounds) do
+                case flat_insert(region, index(intersect, bounds, subdivisions - 1, vertices)) do
                     [] -> [region]
                     indexes -> indexes
                 end
