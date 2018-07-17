@@ -142,6 +142,7 @@ Currently the only supported geometries are:
 
 * `Spat.Geometry.Point` - n-dimensional points
 * `Spat.Geometry.Sphere` - n-dimensional sphere (n-sphere)
+* `Spat.Geometry.Box` - n-dimensional axis-aligned rectangle
 
 ## Indexing Latitude/Longitude
 
