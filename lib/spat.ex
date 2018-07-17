@@ -184,6 +184,23 @@ defmodule Spat do
         literals_to_index(literals, index, count, axis + 1)
     end
 
+    defp offset_literals_to_index(literals, subdivisions, offset, opts) do
+        { literals, _ } = Enum.map_reduce(literals, 0, case (opts[:addressing] || :clamp) do
+            :clamp ->
+                max = Itsy.Bit.set(subdivisions)
+                fn value, axis ->
+                    case value + Spat.Coord.get(offset, axis) do
+                        total when total > max -> { max, axis + 1 }
+                        total when total < 0 -> { 0, axis + 1 }
+                        total -> { total, axis + 1 }
+                    end
+                end
+            :wrap -> &({ &1 + Spat.Coord.get(offset, &2), &2 + 1 })
+        end)
+
+        literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
+    end
+
     @doc """
       Get the index adjacent to the another index given a certain offset.
 
@@ -237,23 +254,34 @@ defmodule Spat do
     @spec adjacent(grid_index, pos_integer, pos_integer, Spat.Coord.t, [addressing: address_modes]) :: grid_index
     @spec adjacent(packed_grid_index, pos_integer, pos_integer, Spat.Coord.t, packing_options | unpacking_options | [addressing: address_modes]) :: packed_grid_index
     def adjacent(index, dimensions, subdivisions, offset, opts \\ [])
-    def adjacent(index, dimensions, subdivisions, offset, opts) when is_list(index) do
-        { literals, _ } =
-            index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
-            |> Enum.map_reduce(0, case (opts[:addressing] || :clamp) do
-                :clamp ->
-                    max = Itsy.Bit.set(subdivisions)
-                    fn value, axis ->
-                        case value + Spat.Coord.get(offset, axis) do
-                            total when total > max -> { max, axis + 1 }
-                            total when total < 0 -> { 0, axis + 1 }
-                            total -> { total, axis + 1 }
-                        end
-                    end
-                :wrap -> &({ &1 + Spat.Coord.get(offset, &2), &2 + 1 })
-            end)
-
-        literals_to_index(literals, Stream.iterate(0, &(&1)) |> Enum.take(subdivisions), subdivisions - 1)
-    end
+    def adjacent(index, dimensions, subdivisions, offset, opts) when is_list(index), do: index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions)) |> offset_literals_to_index(subdivisions, offset, opts)
     def adjacent(index, dimensions, subdivisions, offset, opts), do: unpack(index, dimensions, opts) |> adjacent(dimensions, subdivisions, offset, opts) |> pack(dimensions, opts)
+
+    @doc """
+      Get the indexes adjacent to the another index for batch of offsets.
+
+      This functions the same way as `Spat.adjacent/5`, with the exception that
+      this function is optimised for performing the operation on a batch of
+      offsets.
+
+        iex> Spat.adjacents([0, 0], 2, 2, [{ 4, 0 }, { 5, 0 }], addressing: :clamp)
+        [[1, 1], [1, 1]]
+
+        iex> Spat.adjacents([0, 0], 2, 2, [{ 4, 0 }, { 5, 0 }, { -1, 0 }], addressing: :wrap)
+        [[0, 0], [0, 1], [1, 1]]
+
+        iex> Spat.adjacents(Spat.pack([0, 0], 2), 2, 2, [{ 5, 0 }, { -1, 0 }], addressing: :wrap)
+        [Spat.pack([0, 1], 2), Spat.pack([1, 1], 2)]
+
+        iex> Spat.adjacents(Spat.pack([0, 1], 2, reverse: true), 2, 2, [{ 0, 0 }], reverse: true)
+        [Spat.pack([0, 1], 2, reverse: true)]
+    """
+    @spec adjacents(grid_index, pos_integer, pos_integer, [Spat.Coord.t], [addressing: address_modes]) :: [grid_index]
+    @spec adjacents(packed_grid_index, pos_integer, pos_integer, [Spat.Coord.t], packing_options | unpacking_options | [addressing: address_modes]) :: [packed_grid_index]
+    def adjacents(index, dimensions, subdivisions, offsets, opts \\ [])
+    def adjacents(index, dimensions, subdivisions, offsets, opts) when is_list(index) do
+        literals = index_to_literals(index, Stream.iterate(0, &(&1)) |> Enum.take(dimensions))
+        Enum.map(offsets, &offset_literals_to_index(literals, subdivisions, &1, opts))
+    end
+    def adjacents(index, dimensions, subdivisions, offsets, opts), do: unpack(index, dimensions, opts) |> adjacents(dimensions, subdivisions, offsets, opts) |> Enum.map(&pack(&1, dimensions, opts))
 end
